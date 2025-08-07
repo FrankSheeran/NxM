@@ -1,0 +1,30 @@
+##############################################################################################
+#
+# PARTIAL Makefile for a Solution
+#
+# License and copyright information is in the files src/doc/LICENCE and src/doc/LICENCE.NxM.
+#
+# See src/doc/NxM_Make_System.doc for details.
+#
+##############################################################################################
+#
+# This file defines everything needed to compile a Project that is
+# common for everything in this SOLUTION, regardless of Project,
+# Architecture, Configuration, Site or Machine, and not including
+# Common definitions likely to extend across many Solutions.
+#
+##############################################################################################
+
+# Set it manually, or use this rule that will use your choice of directory name.
+# SoluName := MySolution
+SoluName    := $(notdir $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST))))))
+SoluVersion = 1.0
+SoluComp    =
+SoluLink    =
+
+TarOptions  = --owner=nobody --group=nobody
+
+#MakeOptions = --no-print-directory
+DoSubMake   = $(MAKE) $(MakeOptions) -C $@ $(MAKECMDGOALS)
+DoSpace     = echo; echo; echo
+DoClean     = rm -rf *.log *~ core

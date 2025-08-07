@@ -1,0 +1,42 @@
+# License and copyright information is in the files src/doc/LICENCE and src/doc/LICENCE.NxM.
+#
+# See src/doc/NxM_Make_System.doc for details.
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Emacs autosave files
+*~
+
+# Frank Sheeran additions
+.gdb_history

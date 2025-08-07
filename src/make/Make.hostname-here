@@ -1,0 +1,20 @@
+##############################################################################################
+#
+# PARTIAL Makefile for a Machine
+#
+# License and copyright information is in the files src/doc/LICENCE and src/doc/LICENCE.NxM.
+#
+# See src/doc/NxM_Make_System.doc for details.
+#
+##############################################################################################
+#
+# This file defines everything needed to compile a Project that is
+# common for everything that varies by MACHINE, regardless of Solution,
+# Project, Architecture, or Configuration, and not including Common
+# definitions likely to extend across many Solutions.
+#
+##############################################################################################
+
+# MachName starts with "Mach" so SHOULD be defined here, but since
+# Makefile.Project needs to have this value to find us, it's defined
+# there instead.

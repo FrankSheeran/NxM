@@ -1,0 +1,49 @@
+##############################################################################################
+#
+# PARTIAL Makefile for Common Definitions for all other Makefiles
+#
+# License and copyright information is in the files src/doc/LICENCE and src/doc/LICENCE.NxM.
+#
+# See src/doc/NxM_Make_System.doc for details.
+#
+##############################################################################################
+#
+# This file defines everything needed by more than one other Makefile, that is
+# common across even many Solutions, Projects, Architectures, Configurations,
+# Sites AND Machines.
+#
+##############################################################################################
+
+all::
+
+DistName    = $(SoluName).$(SoluVersion)
+
+# DIRECTORIES: define them and make them.  The per-project Makefile
+# can put big bin and lib files in the distribution by prepending
+# $(BinDir) to the target name, otherwise they'll be in the project dir.
+
+# NOTE DistDir is redefined in src/make/Makefile and src/doc/Makefile to
+# account for being at a different level of depth from the root.
+
+DependDir   = .depends
+DistDir     = ../../../$(DistName)
+BinDir      = $(DistDir)/$(ArchName)/bin/$(ConfName)
+LibDir      = $(DistDir)/$(ArchName)/lib/$(ConfName)
+IncludeDir  = $(DistDir)/include/$(SoluName)
+ScriptDir   = $(DistDir)/bin
+DocDir      = $(DistDir)/doc
+ExampleDir  = $(DistDir)/example
+
+$(DependDir) $(BinDir) $(LibDir) $(IncludeDir) $(ScriptDir) $(DocDir) $(ExampleDir):
+	mkdir -p $@
+
+
+
+# FIXME: Rather than invoking MAKE directly I'd like to use DoSubMake but the args differ.
+
+clean::
+	$(DoClean)
+
+veryclean:: clean
+
+pristine:: veryclean

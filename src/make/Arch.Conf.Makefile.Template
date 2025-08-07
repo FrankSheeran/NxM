@@ -1,0 +1,44 @@
+##############################################################################################
+#
+# Makefile for a Configuration
+#
+# License and copyright information is in the files src/doc/LICENCE and src/doc/LICENCE.NxM.
+#
+# See src/doc/NxM_Make_System.doc for details.
+#
+##############################################################################################
+#
+# This file will:
+# 1) for every subdirectory in ../../src that holds a Make.Project, make sure this directory
+#    also has such a subdirectory, and copy Makefile.Conf.Proj.Templ into it
+# 2) reiterate any make command through all those
+#
+# This file will be copied into place by running make in {Architecture} .
+#
+##############################################################################################
+
+include ../../Make.Solution
+include ../../src/make/Make.Common
+
+SubDirs         = ${sort ${notdir $(patsubst %/,%,${dir ${wildcard ../../src/*/Make.Project}})}}
+SubDirMakefiles = ${patsubst %,%/Makefile,${SubDirs}}
+
+all $(MAKECMDGOALS):: $(SubDirs)
+
+.PHONY: $(SubDirs)
+
+$(SubDirs):: $(SubDirMakefiles)
+	@$(DoSpace)
+	$(DoSubMake)
+
+
+
+# The following could be additionally dependent on updates to the
+# source of the cp, but that would wipe out hand-written destination
+# files if people had writen or edited a Makefile by hand.  If you do need to
+# hand-write a custom Project/Makefile, do so before running
+# gmake in the Configuration or Architecture directories.
+
+$(SubDirMakefiles):
+	mkdir ${dir $@}
+	cp ../../src/make/Arch.Conf.Proj.Makefile.Template $@

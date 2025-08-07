@@ -1,0 +1,48 @@
+##############################################################################################
+#
+# Makefile: Project Template
+#
+# License and copyright information is in the files src/doc/LICENCE and src/doc/LICENCE.NxM.
+#
+# See src/doc/NxM_Make_System.doc for details.
+#
+##############################################################################################
+#
+# This allows you to run gmake in a compilation directory for
+# compiling with a specific set of options (a "Configuration"), for
+# source in a common source directory in ../../../src/{Project}.
+#
+# If you HAVE to modify this file, you can do so and check it into
+# source code control, but you aren't expected to need to.  You will
+# hopefully be able to do all the customization you need to in one of
+# the other files.
+# 
+##############################################################################################
+
+# Variables beginning Xxxx are always defined in Make.Xxxxsomthing, but we'll
+# do MachName here as we need it to find Mach.{Machine}.
+ProjName = $(notdir $(shell pwd))
+MachName = $(shell hostname)
+VPATH    = ../../../src/$(ProjName)
+
+all::
+
+
+
+
+# Include order isn't reasoned out but has worked historically.
+
+# If all your machines are identical, don't force the user to make
+# Make.MachName files.  Meanwhile if all machines differ, don't force
+# the user to make a Make.Site file.  The other files are probably
+# necessary even for the smallest projects for which NxM is appropriate.
+
+-include ../../../src/make/Make.Site
+-include ../../../src/make/Make.$(MachName)
+include ../../../Make.Solution
+include ../../../src/$(ProjName)/Make.Project
+include ../../Make.Architecture
+include ../Make.Configuration
+include ../../../src/make/Make.Common
+include ../../../src/make/Make.Proj.Common
+include $(wildcard $(DependMakefiles))

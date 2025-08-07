@@ -1,0 +1,19 @@
+##############################################################################################
+#
+# PARTIAL Makefile for a Site
+#
+# License and copyright information is in the files src/doc/LICENCE and src/doc/LICENCE.NxM.
+#
+# See src/doc/NxM_Make_System.doc for details.
+#
+##############################################################################################
+#
+# This file defines everything needed to compile a Project that is
+# common for everything at this SITE, regardless of Solution,
+# Project, Architecture, Configuration, Machine, and not including
+# Common definitions likely to extend across many Solutions.
+#
+##############################################################################################
+
+SiteComp      =
+SiteLink      =

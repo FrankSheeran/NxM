@@ -1,0 +1,46 @@
+##############################################################################################
+#
+# PARTIAL Makefile for the Architecture
+#
+# License and copyright information is in the files src/doc/LICENCE and src/doc/LICENCE.NxM.
+#
+# See src/doc/NxM_Make_System.doc for details.
+#
+##############################################################################################
+#
+# This file defines everything needed to compile a Project that is
+# common for everything in this ARCHITECTURE, regardless of Solution,
+# Project, Configuration, Site or Machine, and not including
+# Common definitions likely to extend across many Solutions.
+#
+##############################################################################################
+
+# Set it manually, or use this rule that will use your choice of directory name.
+#ArchName     := Fedora40-64
+ArchName      := $(notdir $(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST))))))
+
+ArchDefines   = -DAK_MT -DSCUseMySQL
+
+# adding -fPIC for gcc version 4.5.1 20101208 [gcc-4_5-branch revision 167585] (SUSE Linux)
+
+# CCReportErrs used to have -Wall -Wno-parentheses -Werror but gcc9 is
+# issuing warnings for what appears to be good code, especially with -O2.
+
+CCReportErrs  = -Wall -Wno-parentheses -Wno-format-zero-length -Wunused-result
+
+# CCPPComp is common to C and C++, and only used in this file.
+CCPPComp      = -fPIC -march=native $(CCReportErrs)
+CC            = gcc $(CCPPComp)
+ArchLibs      = -latomic
+
+CPP           = gcc -E
+
+# If you want to compile the same code with two different compilers, that'd be an
+# example where you'd want to set compiler in Make.Configuration.
+CPlusPlus     = g++ -std=c++20 $(CCPPComp)
+#CPlusPlus     = clang -std=c++20 $(CCPPComp)
+MakeDepend    = gcc -MM
+MakeStaticLib = ar rcsv
+MakeDynamicLib= g++ -shared -o
+#MakeDynamicLib= clang -shared -o
+MakeBinary    = $(CPlusPlus) -pthread

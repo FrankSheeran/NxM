@@ -1,0 +1,5 @@
+This is a placeholder for the license for the software being built
+with the NxM makefiles.  The intent is that a project can create
+this file, and won't have to edit all the NxM headers to mention
+it because they already do mention it.
+

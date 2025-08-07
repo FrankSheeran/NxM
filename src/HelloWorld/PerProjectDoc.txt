@@ -1,0 +1,4 @@
+# License and copyright information is in the files src/doc/LICENCE and src/doc/LICENCE.NxM.
+# See src/doc/NxM_Make_System.doc for details.
+
+This is an example of a per-project document.

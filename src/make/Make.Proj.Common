@@ -1,0 +1,235 @@
+##############################################################################################
+#
+# PARTIAL Makefile for Common Definitions for all {Project}/Makefile
+#
+# License and copyright information is in the files src/doc/LICENCE and src/doc/LICENCE.NxM.
+#
+# See src/doc/NxM_Make_System.doc for details.
+#
+##############################################################################################
+#
+# This file defines everything needed to compile a Project that
+# differs by Project but not by Solution, Architecture, Configuration,
+# Site or Machine.
+#
+##############################################################################################
+
+# consider:
+# .PRECIOUS: $(AllComp) $(LtlBinTgts:=.o) $(BigLibObjs) $(LtlLibTgts:.a=.o) $(BigBinObjs)
+
+BigBinObjs = $(BigBinSrcs:.cpp=.o)
+BigLibObjs = $(BigLibSrcs:.cpp=.o)
+
+LtlBinTgts = $(LtlBinSrcs:%.cpp=$(BinDir)/%)
+LtlBinObjs = $(LtlBinSrcs:.cpp=.o)
+
+LtlLibTgts = $(LtlLibSrcs:%.cpp=$(LibDir)/lib%.a) $(LtlLibSrcs:%.cpp=$(LibDir)/lib%.so)
+LtlLibObjs = $(LtlLibSrcs:.cpp=.o)
+
+# By default, we want (re)compile all big and little libraries,
+# and big and little binary targets.
+
+all:: $(BigBinTgt) $(BigBinTgt2) $(BigBinTgt3) $(BigBinTgt4) $(LtlBinTgts) \
+      $(BigLibTgt) $(LtlLibTgts)
+
+pure:: $(BigBinTgt:=.pure) $(BigBinTgt2:=.pure) $(BigBinTgt3:=.pure) \
+       $(BigBinTgt4:=.pure) $(LtlBinTgts:=.pure) \
+       $(BigLibTgt:=.pure) $(LtlLibTgts:=.pure)
+
+quant:: $(BigBinTgt:=.quant) $(BigBinTgt2:=.quant) $(BigBinTgt3:=.quant) \
+        $(BigBinTgt4:=.quant) $(LtlBinTgts:=.quant) \
+        $(BigLibTgt4:=.quant) $(LtlLibTgts:=.quant)
+
+
+
+# CLEANING RULES: The project Makefile and Make.Architecture can
+# define extra actions to carry out.  "clean" should remove the most
+# obvious crap, including object files, and force a recompile.
+# "pristine" should take you back to as if you just checked out,
+# removing the entire distribution and depend files.  "veryclean" is
+# in-between, and currently just removes Emacs backup files.  There
+# may be no reason to have this target.  NONE of these targets will
+# remove the code itself, or attempt to check out code.  In all cases,
+# there's no reason for these targets in this file to remove files
+# removed by Make.Common, which will also be included by any file
+# including this file.  Here, we only need to remove files that would
+# be created in compilation directories.
+
+clean::
+	rm -rf *.o *.pure *.quant SunWS_cache
+
+veryclean::
+	rm -rf  *~
+
+pristine::
+	rm -rf $(BigBinTgt) $(BigBinTgt2) $(BigBinTgt3) $(BigBinTgt4) $(LtlBinTgts) $(BigLibTgt) $(LtlLibTgt) $(DependDir) $(BinDir) $(LibDir)
+
+
+
+# All variables starting with Depend are taken from the following
+# article, and work as a set to efficiently calculate the dependencies
+# of each source file (the headers that it relies on) and instruct
+# make to recompile each source in turn should any of those headers
+# change.  It works by making a tiny (one-line) sub-makefile for each
+# source file, that names the headers in question.  This is generated
+# by the compiler as it's compiling the source file.  All these tiny
+# makefiles are located in a directory $(DependDir) under the current
+# directory.
+# http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/
+
+DependComp = -MT $@ -MMD -MP -MF $(DependDir)/$*.d
+
+DependMakefiles := $(BigBinObjs:%.o=$(DependDir)/%.d) $(BigLibObjs:%.o=$(DependDir)/%.d) $(LtlBinObjs:%.o=$(DependDir)/%.d) $(LtlLibObjs:%.o=$(DependDir)/%.d)
+
+$(DependMakefiles):
+
+
+
+# Sum up all the flags defined for our architecture and our projects.
+
+# These variables end up with lots of unneeded internal spaces;
+# strip() prettifies.
+
+AllComp    = $(strip $(ArchComp) $(SoluComp) $(SiteComp) $(ProjComp) $(ConfComp) $(DependComp))
+AllLink    = $(strip $(ArchLink) $(SoluLink) $(SiteLink) $(ProjLink) $(ConfComp))
+
+
+
+# Extra suffixes are for Purify/Quantify output.
+
+.SUFFIXES: .cpp.c .o .pure .quant
+
+
+
+# Rules to compile
+
+# The strange touch command is needed as the output dependency file
+# timestamp is the same as the object file, which will cause make to
+# remake the object file (which again regenerates the dependency file,
+# etc.)  Without the touch this works perfectly--but recompiles every
+# time.
+
+%.o : %.cpp $(DependDir)/%.d | $(DependDir)
+	$(CPlusPlus) $(AllComp) -c $<
+	touch $@
+        
+%.o : %.c $(DependDir)/%.d | $(DependDir)
+	$(cc) $(AllComp) -c $<
+	touch $@
+
+%: %.o
+	$(CPlusPlus) $< $(AllLink) -o $@
+
+$(BinDir)/%: %.o
+	$(CPlusPlus) $< $(AllLink) -o $@
+
+$(LibDir)/lib%.a: %.o | $(LibDir)
+	$(MakeStaticLib) $@ $? $(BigLibFlags)
+
+$(LibDir)/lib%.so: %.o | $(LibDir)
+	$(MakeDynamicLib) $@ $? $(BigLibFlags)
+
+.o.pure:
+	$(Purify) $(CC) $< $(AllLink) -o $@
+
+.o.quant:
+	$(Quantify) $(CC) $< $(AllLink) -o $@
+
+# This implicit rule was blocking little bin sources from being
+# compiled into objects with our rules, then the object file be linked
+# into an executable with our rules.  By stating it with no recipe, we
+# disable the implicit rule and allow our rules to work.
+
+%:%.cpp
+
+
+
+$(BigBinTgt):: $(BigBinObjs) $(BigLibTgt) $(LtlLibTgts) | $(BinDir)
+	rm -rf $@
+	$(CPlusPlus) $(BigBinObjs) $(BigBinLink) $(AllLink) -o $@
+
+$(BigBinTgt2):: $(BigBinObjs2) $(BigLibTgt) $(LtlLibTgts)
+	rm -rf $@
+	$(CPlusPlus) $(BigBinObjs2) $(BigBinLink2) $(AllLink) -o $@
+
+$(BigBinTgt3):: $(BigBinObjs3) $(BigLibTgt) $(LtlLibTgts)
+	rm -rf $@
+	$(CPlusPlus) $(BigBinObjs3) $(BigBinLink3) $(AllLink) -o $@
+
+$(BigBinTgt4):: $(BigBinObjs4) $(BigLibTgt) $(LtlLibTgts)
+	rm -rf $@
+	$(CPlusPlus) $(BigBinObjs4) $(BigBinLink4) $(AllLink) -o $@
+
+BigLibTgtStatic  = $(BigLibTgt:%.so=%.a)
+BigLibTgtDynamic = $(BigLibTgt:%.a=%.so)
+
+$(BigLibTgtStatic):: $(BigLibObjs) | $(LibDir)
+	$(MakeStaticLib) $@ $? $(BigLibFlags)
+
+$(BigLibTgtDynamic):: $(BigLibObjs) | $(LibDir)
+	$(MakeDynamicLib) $@ $? $(BigLibFlags)
+
+
+
+$(BigBinTgtDir:=.pure):: $(BigBinObjs) $(BigLibTgt) $(LtlLibTgts)
+	rm -rf $@
+	$(Purify) $(CC) $(BigBinObjs) $(BigBinLink) $(AllLink) -o $@
+
+$(BigBinTgt2Dir:=.pure):: $(BigBinObjs2) $(BigLibTgt) $(LtlLibTgts)
+	rm -rf $@
+	$(Purify) $(CC) $(BigBinObjs2) $(BigBinLink2) $(AllLink) -o $@
+
+$(BigBinTgt3Dir:=.pure):: $(BigBinObjs3) $(BigLibTgt) $(LtlLibTgts)
+	rm -rf $@
+	$(Purify) $(CC) $(BigBinObjs3) $(BigBinLink3) $(AllLink) -o $@
+
+$(BigBinTgt4Dir:=.pure):: $(BigBinObjs4) $(BigLibTgt) $(LtlLibTgts)
+	rm -rf $@
+	$(Purify) $(CC) $(BigBinObjs4) $(BigBinLink4) $(AllLink) -o $@
+
+
+
+$(BigBinTgtDir:=.quant):: $(BigBinObjs) $(BigLibTgt) $(LtlLibTgts)
+	rm -rf $@
+	$(Quantify) $(CC) $(BigBinObjs) $(BigBinLink) $(AllLink) -o $@
+
+$(BigBinTgt2Dir:=.quant):: $(BigBinObjs2) $(BigLibTgt) $(LtlLibTgts)
+	rm -rf $@
+	$(Quantify) $(CC) $(BigBinObjs2) $(BigBinLink2) $(AllLink) -o $@
+
+$(BigBinTgt3Dir:=.quant):: $(BigBinObjs3) $(BigLibTgt) $(LtlLibTgts)
+	rm -rf $@
+	$(Quantify) $(CC) $(BigBinObjs3) $(BigBinLink3) $(AllLink) -o $@
+
+$(BigBinTgt4Dir:=.quant):: $(BigBinObjs4) $(BigLibTgt) $(LtlLibTgts)
+	rm -rf $@
+	$(Quantify) $(CC) $(BigBinObjs4) $(BigBinLink4) $(AllLink) -o $@
+
+
+
+$(LtlBinTgts)       :: $(BigLibTgt) $(LtlLibTgts) | $(LibDir)
+$(LtlBinTgts.pure)  :: $(BigLibTgt) $(LtlLibTgts) | $(LibDir)
+$(LtlBinTgts.quant) :: $(BigLibTgt) $(LtlLibTgts) | $(LibDir)
+
+
+
+# OTHER FILES TO ADD TO DISTRIBUTIONS
+
+IncludeTgtDist := $(patsubst %,$(IncludeDir)/%, $(IncludeTgt))
+ScriptTgtDist  := $(patsubst %,$(ScriptDir)/%,  $(ScriptTgt))
+DocTgtDist     := $(patsubst %,$(DocDir)/%,     $(DocTgt))
+ExampleTgtDist := $(patsubst %,$(ExampleDir)/%, $(ExampleTgt))
+
+all:: $(IncludeTgtDist) $(ScriptTgtDist) $(DocTgtDist) $(ExampleTgtDist)
+
+$(IncludeDir)/%: % | $(IncludeDir)
+	cp $< $@
+
+$(ScriptDir)/%: % | $(ScriptDir)
+	cp $< $@
+        
+$(DocDir)/%: % | $(DocDir)
+	cp $< $@
+        
+$(ExampleDir)/%: % | $(ExampleDir)
+	cp $< $@

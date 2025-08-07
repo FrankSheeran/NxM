@@ -1,0 +1,84 @@
+##############################################################################################
+#
+# PARTIAL Makefile for a Project
+#
+# License and copyright information is in the files src/doc/LICENCE and src/doc/LICENCE.NxM.
+#
+# See src/doc/NxM_Make_System.doc for details.
+#
+##############################################################################################
+#
+# This file defines everything needed to compile a Project that
+# varies by PROJECT, regardless of Architecture, Configuration,
+# Site or Machine, and not including Common definitions likely to
+# extend across many Solutions.
+#
+##############################################################################################
+
+# Compilation (-D, -I) and linking (-L, -l) options needed for
+# compilation in this directory. 
+
+ProjComp     = -I../../../src
+
+ProjLink     = -L$(LibDir)
+
+
+
+##############################################################################################
+#
+# One big binary made from lots of object files.
+#
+##############################################################################################
+
+BigBinSrcs   = main.cpp
+BigBinLink   = -lhello
+BigBinTgt    = $(BinDir)/hello
+
+
+
+##############################################################################################
+#
+# Many small binaries each made from one object file.
+#
+##############################################################################################
+
+#LtlBinSrcs = main.cpp
+
+
+
+##############################################################################################
+#
+# One big library made from lots of object files.
+#
+# SUGGESTION: compile first lower-level modules, progressing to
+# higher-level, so that the source of compilation errors is a bit
+# clearer.
+#
+##############################################################################################
+
+BigLibSrcs   = hellolib.cpp
+
+BigLibTgt    = $(LibDir)/libhello.a $(LibDir)/libhello.so
+
+
+
+##############################################################################################
+#
+# Many small libraries each made from one object file.
+#
+##############################################################################################
+
+LtlLibSrcs = hellosmall.cpp
+
+
+
+##############################################################################################
+#
+# Headers from libraries to be installed in $(DistDir)/include
+#
+##############################################################################################
+
+IncludeTgt   = hellolib.h
+ScriptTgt    = hello.pl
+DocTgt       = PerProjectDoc.txt
+ExampleTgt   = main.cpp
